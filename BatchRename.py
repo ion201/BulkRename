@@ -13,7 +13,6 @@ import tkinter as tk
 from tkinter import font
 from io import StringIO
 import traceback
-import shutil
 try:
     from gi.repository import Gio
     gsettings = Gio.Settings('org.gnome.desktop.interface')
@@ -170,9 +169,9 @@ def ProcessUncaughtException(tk_root, err):
     tk_frame.pack()
     tk_root.title('Error')
     tk.Label(tk_frame, text='Uncaught Exception! This shouldn\'t have happended.').pack()
-    tk.Label(tk_frame, text='If you can reproduce it, feel free to file an issue at:').pack()
+    tk.Label(tk_frame, text='Please file an issue at:').pack()
     tk.Label(tk_frame, text='%s' % URL).pack()
-    tk.Label(tk_frame, text='Please include a copy of this information:').pack()
+    tk.Label(tk_frame, text='and include a copy of this information:').pack()
     textbox = tk.Text(tk_frame)
     textbox.insert('@0,0',
                     s.getvalue() + '\n' + \
@@ -186,7 +185,7 @@ def RenameFiles(files_old, files_new):
     assert len(files_old) == len(files_new)
 
     for old_path, new_path in zip(files_old, files_new):
-        shutil.move(old_path, new_path)
+        os.rename(old_path, new_path)
 
 
 def main(tk_root):
@@ -212,6 +211,7 @@ def main(tk_root):
 
     for f in sys.argv[1:]:
         name = f.replace('file:///', '/')
+        name = os.path.abspath(name)
         if not os.path.exists(name):
             raise FileNotFoundError(name)
         files_old.append(name)
@@ -306,5 +306,5 @@ if __name__ == '__main__':
         ProcessPermissionError(tk_root, e)
     except FileNotFoundError as e:
         ProcessFileNotFoundError(tk_root, e)
-    except AssertionError as e:
+    except Exception as e:
         ProcessUncaughtException(tk_root, e)
